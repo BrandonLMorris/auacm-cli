@@ -1,0 +1,6 @@
+#!/usr/bin/env python3
+
+import sys
+from auacm import main
+
+main.main(*sys.argv[1:])
