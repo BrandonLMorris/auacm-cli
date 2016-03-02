@@ -15,8 +15,8 @@ def whoami(*args):
     r = requests.get(auacm.BASE_URL + 'me', cookies={'session': auacm.session})
     if r.ok:
         print('User info:')
-        print('\n'.join(['{} => {}'
-            .format(key, val) for key, val in r.json()['data'].items()]))
+        print('\n'.join(['{} => {}'.format(key, val) for key, val in
+              r.json()['data'].items()]))
     else:
         print('There was an error. Are you logged in?')
         exit(1)

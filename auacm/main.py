@@ -7,7 +7,7 @@ The central entry point of the auacm app.
 import requests, sys
 import auacm
 import auacm.utils as utils
-import auacm.user
+import auacm.user, auacm.problems
 
 def main(args):
     """
@@ -31,7 +31,8 @@ def main(args):
                 'test                attempt to connect to the server\n'
                 'login               log into the website\n'
                 'logout              log out of current session\n'
-                'whoami              print basic info about the current user')
+                'whoami              print basic info about the current user\n'
+                'problem [-v/--verbose] search for a problem')
 
         elif args[0] in utils.callbacks:
             utils.callbacks[args[0]](args[1:])
