@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup  (name='auacm',
-        version='0.1',
+        version='0.1.1',
         description='Command-line interface to the Auburn ACM website',
         author='Brandon Morris',
         author_email='brandon.morris95@gmail.com',
@@ -9,6 +9,6 @@ setup  (name='auacm',
         scripts=['bin/auacm'],
         install_requires=['requests'],
         url = 'https://github.com/BrandonLMorris/auacm-cli',
-        download_url = 'https://github.com/BrandonLMorris/auacm-cli/tarball/0.1',
+        download_url = 'https://github.com/BrandonLMorris/auacm-cli/tarball/0.1.1',
         keywords = ['competitive', 'icpc', 'auacm', 'auburn']
         )
