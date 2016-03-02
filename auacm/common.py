@@ -1,9 +1,14 @@
+"""Package level common values"""
+import os
+
 DEBUG = False
-base_url = 'http://localhost:5000/api/' if DEBUG else 'http://auacm.com/api/'
+BASE_URL = 'http://localhost:5000/api/' if DEBUG else 'http://auacm.com/api/'
 
 try:
-    session = open('.session', 'r').readline().strip()
-except:
+    session = (open(
+            os.path.join(os.path.expanduser('~'), '.auacm_session.txt'), 'r')
+            .readline().strip())
+except FileNotFoundError as exception:
     session = ''
 
 logo = """
