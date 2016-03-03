@@ -57,7 +57,6 @@ if __name__ == '__main__':
         keywords=KEYWORDS,
         long_description=read('README.md'),
         packages=PACKAGES,
-        package_dir={""},
         zip_safe=False,
         classifiers=CLASSIFIERS,
         install_requires=INSTALL_REQUIRES,
