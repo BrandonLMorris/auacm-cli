@@ -7,7 +7,7 @@ The central entry point of the auacm app.
 import requests, sys
 import auacm
 import auacm.utils as utils
-import auacm.user, auacm.problems
+import auacm.user, auacm.problems, auacm.submit
 
 def main(args):
     """
@@ -43,7 +43,7 @@ def main(args):
 
     except requests.exceptions.ConnectionError as exception:
         print('There was an error connecting to the server')
-        print(exception.message)
+        print(exception)
         exit(1)
 
 @utils.subcommand('test')
