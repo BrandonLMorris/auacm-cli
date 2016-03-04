@@ -4,10 +4,10 @@ main.py
 The central entry point of the auacm app.
 """
 
-import requests, sys
+import requests, sys, textwrap
 import auacm
 import auacm.utils as utils
-import auacm.user, auacm.problems, auacm.submit
+# import auacm.user, auacm.problems, auacm.submit
 
 def main(args):
     """
@@ -25,14 +25,15 @@ def main(args):
             # No subcommand, print info
             print(auacm.logo)
             print('Wecome to the Auburn ACM command-line interface!')
-            print(
-                'Supported Commands:\n'
-                '[none], -h, --help  print this lovely help\n'
-                'test                attempt to connect to the server\n'
-                'login               log into the website\n'
-                'logout              log out of current session\n'
-                'whoami              print basic info about the current user\n'
-                'problem [-v/--verbose] search for a problem')
+            print(textwrap.dedent('''
+                Supported Commands:
+                [none], -h, --help  print this lovely help
+                test                attempt to connect to the server
+                login               log into the website
+                logout              log out of current session
+                whoami              print basic info about the current user
+                problem [-v/--verbose] search for a problem
+            '''))
 
         elif args[0] in utils.callbacks:
             utils.callbacks[args[0]](args[1:])

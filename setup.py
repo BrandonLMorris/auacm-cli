@@ -2,13 +2,13 @@ import codecs
 import os
 import re
 
-from setuptools import setup
+from setuptools import setup, find_packages
 
 ##################################################################
 
 NAME = 'auacm'
-PACKAGES = ['auacm']
-META_PATH = os.path.join('auacm', '__init__.py')
+PACKAGES = find_packages(where='src')
+META_PATH = os.path.join('src', 'auacm', '__init__.py')
 KEYWORDS = ['competitive', 'icpc', 'auacm', 'auburn']
 CLASSIFIERS = [
     'License :: OSI Approved :: MIT License',
@@ -57,6 +57,7 @@ if __name__ == '__main__':
         keywords=KEYWORDS,
         long_description=read('README.md'),
         packages=PACKAGES,
+        package_dir={'': 'src'},
         zip_safe=False,
         classifiers=CLASSIFIERS,
         install_requires=INSTALL_REQUIRES,
