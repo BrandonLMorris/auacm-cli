@@ -10,8 +10,8 @@ import argparse
 import time
 from auacm.utils import subcommand
 
+# Map server status results to output strings
 RESULTS = {
-    'start': 'Running',
     'compile': 'Compile Error',
     'runtime': 'Runtime Error',
     'timeout': 'Timeout',
@@ -37,25 +37,14 @@ def submit(args):
 
     try:
         submit_file = {'file': open(args.filename, 'rb')}
-    except ValueError:
-        print('Error: Could not open file')
+    except:
+        print('Error: Could not open file ' + args.filename)
         exit(1)
 
     if args.id:
         data = {'pid': args.problem}
     else:
-        # Look up the pid from the problem name
-        response = requests.get(auacm.BASE_URL + 'problems')
-        if not response.ok:
-            print('There was an error looking up the problem id')
-            exit(1)
-
-        pid = -1
-        for problem in response.json()['data']:
-            if args.problem.lower() in problem['name'].lower():
-                pid = problem['pid']
-                break
-
+        pid = _find_pid_from_name(args.problem)
         if pid == -1:
             print('Could not find a problem with the name ' + args.problem)
             exit(1)
@@ -76,14 +65,34 @@ def submit(args):
 
     if not response.ok:
         print('There was an error submitting the solution')
+        if 'Unauthorized' in response.text:
+            print('You are not logged in')
         exit(1)
 
     print('Successful submit. Getting results...')
     job_id = response.json()['data']['submissionId']
+    print('Running...')
     status = 'start'
     while status == 'start':
+        # NOTE: This will *not work* in production
         response = requests.get(auacm.BASE_URL + 'submit/' + str(job_id))
         status = response.json()['data']['status']
-        print(RESULTS[status])
-        time.sleep(1)
+        if status != 'start':
+            print(RESULTS[status])
+        else:
+            time.sleep(1)
 
+def _find_pid_from_name(name):
+    """Look up the pid from the problem name"""
+    response = requests.get(auacm.BASE_URL + 'problems')
+    if not response.ok:
+        print('There was an error looking up the problem id')
+        exit(1)
+
+    pid = -1
+    for problem in response.json()['data']:
+        if name.lower() in problem['name'].lower():
+            pid = problem['pid']
+            break
+
+    return pid
