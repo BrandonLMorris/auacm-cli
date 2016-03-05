@@ -8,7 +8,7 @@ import requests
 import auacm
 import argparse
 import time
-from auacm.utils import subcommand
+from auacm.utils import subcommand, _find_pid_from_name
 
 # Map server status results to output strings
 RESULTS = {
@@ -82,17 +82,3 @@ def submit(args):
         else:
             time.sleep(1)
 
-def _find_pid_from_name(name):
-    """Look up the pid from the problem name"""
-    response = requests.get(auacm.BASE_URL + 'problems')
-    if not response.ok:
-        print('There was an error looking up the problem id')
-        exit(1)
-
-    pid = -1
-    for problem in response.json()['data']:
-        if name.lower() in problem['name'].lower():
-            pid = problem['pid']
-            break
-
-    return pid

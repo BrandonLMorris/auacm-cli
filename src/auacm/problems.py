@@ -4,9 +4,9 @@ problems.py
 Module for handling problem related commands
 """
 
-import requests
+import requests, argparse, textwrap
 import auacm
-from auacm.utils import subcommand
+from auacm.utils import subcommand, _find_pid_from_name
 
 @subcommand('problem')
 def problems(args=None):
@@ -44,4 +44,63 @@ def problems(args=None):
             print('    | shortname: ' + result['shortname'])
             print('    | solved: ' + str(result['solved']))
             print('    | url: ' + result['url'])
+
+
+@subcommand('problem-info')
+def get_problem_info(args):
+    """Get detailed data on a problem (description, input, etc.)"""
+    parser = argparse.ArgumentParser(
+        add_help=False,
+        usage='problem-info [-i/--id] problem'
+    )
+    parser.add_argument('problem')
+    parser.add_argument('-i', '--id', action='store_true')
+    args = parser.parse_args(args)
+
+    if args.id:
+        pid = args.problem
+    else:
+        pid = _find_pid_from_name(args.problem)
+        if pid == -1:
+            print('Could not find problem named ' + args.problem)
+            exit(1)
+
+    response = requests.get(auacm.BASE_URL +  'problems/ ' + str(pid))
+
+    if not response.ok:
+        print('There was an error retrieving the problem')
+        if auacm.DEBUG:
+            print(response.text)
+        exit(1)
+
+    data = response.json()['data']
+
+    # Print all the results
+    print(textwrap.dedent('''
+        Name: {}
+
+        Description
+        {}
+
+        Input
+        {}
+
+        Output
+        {}
+        '''.format(
+            data['name'],
+            data['description'],
+            data['input_desc'],
+            data['output_desc']
+            )))
+
+    for case in data['sample_cases']:
+        print('Sample Case {}'.format(case['case_num']))
+        print('Input:')
+        print(case['input'])
+        print()
+
+        print('Output:')
+        print(case['output'])
+        print()
 

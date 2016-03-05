@@ -33,6 +33,8 @@ def main(args):
                 logout              log out of current session
                 whoami              print basic info about the current user
                 problem [-v/--verbose] search for a problem
+                submit [-i/--id][-p/--python {2, 3}] <problem> <file>
+                problem-info [-i/--id] <problem>
             '''))
 
         elif args[0] in utils.callbacks:
