@@ -1,7 +1,7 @@
 """Package level common values"""
 import os
 
-DEBUG = True
+DEBUG = False
 BASE_URL = 'http://localhost:5000/api/' if DEBUG else 'http://auacm.com/api/'
 
 try:

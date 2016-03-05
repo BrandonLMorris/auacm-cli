@@ -8,7 +8,7 @@ import auacm.utils
 __description__ = 'A command line interface to the Auburn ACM website'
 __license__ = 'MIT'
 __uri__ = 'https://github.com/BrandonLMorris/auacm-cli'
-__version__ = '0.1.1'
+__version__ = '0.2'
 __author__ = 'Brandon Morris'
 __email__ = 'brandon.morris95@gmail.com'
 

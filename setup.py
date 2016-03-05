@@ -58,6 +58,7 @@ if __name__ == '__main__':
         long_description=read('README.md'),
         packages=PACKAGES,
         package_dir={'': 'src'},
+        scripts=['bin/auacm'],
         zip_safe=False,
         classifiers=CLASSIFIERS,
         install_requires=INSTALL_REQUIRES,
