@@ -17,16 +17,18 @@ def whoami(*args):
         print('User info:')
         for key, val in r.json()['data'].items():
             print('    |{} => {}'.format(key, val))
-    else:
-        print('There was an error. Are you logged in?' if not auacm.DEBUG else
-                'ERROR\n' + r.text)
-        exit(1)
+    elif r.status_code == 401:
+        raise auacm.exceptions.UnauthorizedException('You are not logged in')
 
 
 @utils.subcommand('logout')
 def logout(*args):
     """Log the user out of the current session"""
-    open(os.path.join(os.path.expanduser('~'), '.auacm_session.txt'), 'w').close()
+    # Erase the contents of the session file
+    open(
+        os.path.join(os.path.expanduser('~'), '.auacm_session.txt'),
+        'w'
+    ).close()
     auacm.session = ''
 
 
@@ -35,17 +37,23 @@ def login(*args):
     """Log a user in to the website. Keeps up with session data"""
     username = input('Username: ')
     password = getpass.getpass('Password: ')
-    r = requests.post(auacm.BASE_URL + 'login',
-            data={'username': username, 'password': password})
+    response = requests.post(
+        auacm.BASE_URL + 'login',
+        data={
+            'username': username,
+            'password': password
+        })
 
-    if r.ok:
+    if response.ok:
         print('Success!')
     else:
-        utils.log('There was an error attempting to log in')
-        exit(1)
+        raise auacm.exceptions.ConnectionError(
+            'There was an error attempting to log in')
 
     # Save the new session to a file
-    auacm.session = r.cookies['session']
-    f = open(os.path.join(os.path.expanduser('~'), '.auacm_session.txt'), 'w')
-    f.write(auacm.session + '\n')
-    f.close()
+    auacm.session = response.cookies['session']
+    session_f = open(
+        os.path.join(os.path.expanduser('~'), '.auacm_session.txt'),
+        'w')
+    session_f.write(auacm.session + '\n')
+    session_f.close()

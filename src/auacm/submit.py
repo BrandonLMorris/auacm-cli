@@ -37,7 +37,7 @@ def submit(args):
 
     try:
         submit_file = {'file': open(args.filename, 'rb')}
-    except:
+    except IOError:
         print('Error: Could not open file ' + args.filename)
         exit(1)
 
@@ -46,8 +46,9 @@ def submit(args):
     else:
         pid = _find_pid_from_name(args.problem)
         if pid == -1:
-            print('Could not find a problem with the name ' + args.problem)
-            exit(1)
+            raise auacm.exceptions.ProblemNotFoundError(
+                'Could not find a problem with the name {}'
+                .format(args.problem))
         data = {'pid': pid}
 
     # Set the python version or default to Python 3
@@ -66,15 +67,14 @@ def submit(args):
     if not response.ok:
         print('There was an error submitting the solution')
         if 'Unauthorized' in response.text:
-            print('You are not logged in')
-        exit(1)
+            raise auacm.exceptions.UnauthorizedException(
+                'You are not logged in')
 
     print('Successful submit. Getting results...')
     job_id = response.json()['data']['submissionId']
     print('Running...')
     status = 'start'
     while status == 'start':
-        # NOTE: This will *not work* in production
         response = requests.get(auacm.BASE_URL + 'submit/' + str(job_id))
         status = response.json()['data']['status']
         if status != 'start':

@@ -7,47 +7,53 @@ The central entry point of the auacm app.
 import requests, sys, textwrap
 import auacm
 import auacm.utils as utils
-# import auacm.user, auacm.problems, auacm.submit
+from auacm.exceptions import ConnectionError, ProblemNotFoundError, UnauthorizedException
 
 def main(args):
     """
     Entry point for the auacm-cli app
 
     Supported commands (passed as positional arguments):
-        [none]      print logo and help
-        test        attempt to connect to the server
-        login       log in as a user to the website
-        logout      log out of current session
-        whoami      print basic info about the current user
+        [none]        print logo and help
+        test          attempt to connect to the server
+        login         log in as a user to the website
+        logout        log out of current session
+        whoami        print basic info about the current user
+        problem       search for a problem
+        submit        submit a solution to a problem
+        problem-info  get detailed information on a problem
     """
-    try:
-        if not args or args[0] in {'-h', '--help'}:
-            # No subcommand, print info
-            print(auacm.logo)
-            print('Wecome to the Auburn ACM command-line interface!')
-            print(textwrap.dedent('''
-                Supported Commands:
-                [none], -h, --help  print this lovely help
-                test                attempt to connect to the server
-                login               log into the website
-                logout              log out of current session
-                whoami              print basic info about the current user
-                problem [-v/--verbose] search for a problem
-                submit [-i/--id][-p/--python {2, 3}] <problem> <file>
-                problem-info [-i/--id] <problem>
-            '''))
+    if not args or args[0] in {'-h', '--help'}:
+        # No subcommand, print info
+        print(auacm.logo)
+        print('Wecome to the Auburn ACM command-line interface!')
+        print(textwrap.dedent('''
+            Supported Commands:
+            [none], -h, --help  print this lovely help
+            test                attempt to connect to the server
+            login               log into the website
+            logout              log out of current session
+            whoami              print basic info about the current user
+            problem [-v/--verbose] search for a problem
+            submit [-i/--id][-p/--python {2, 3}] <problem> <file>
+            problem-info [-i/--id] <problem>
+        '''))
 
-        elif args[0] in utils.callbacks:
+    elif args[0] in utils.callbacks:
+        try:
             utils.callbacks[args[0]](args[1:])
+        except (ProblemNotFoundError, UnauthorizedException) as exp:
+            print(exp.message)
+            exit(1)
+        except (requests.exceptions.ConnectionError, ConnectionError):
+            print('There was an error connecting to the server: {}'
+                  .format(auacm.BASE_URL))
+            exit(1)
 
-        else:
-            print('Whoops, that subcommand isn\'t supported.\n'
-                  'Run again with -h or --help to see full list of commands.')
+    else:
+        print('Whoops, that subcommand isn\'t supported.\n'
+              'Run again with -h or --help to see full list of commands.')
 
-    except requests.exceptions.ConnectionError as exception:
-        print('There was an error connecting to the server')
-        print(exception)
-        exit(1)
 
 @utils.subcommand('test')
 def test(_):
@@ -57,7 +63,7 @@ def test(_):
     if response.ok:
         print('Connection successful! ' + str(response.status_code))
     else:
-        print('Error status code received from the server')
+        raise auacm.exceptions.ConnectionError()
 
 
 if __name__ == '__main__':

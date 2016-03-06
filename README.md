@@ -68,7 +68,7 @@ alphabetically, that other problem will be used.
 
 ### Submission
 
-You can also submit solutions to problems using `auacm`\*. To do so, simply
+You can also submit solutions to problems using `auacm`. To do so, simply
 run the `submit` subcommand, followed by the problem name and the solution
 file:
 
@@ -80,11 +80,6 @@ to indicate the version of Python. The default is Python 3.
 `$ auacm submit parity parity.py -p 2`
 
 After you submit, `auacm` will query your submission to obtain the results.
-
-\*At the time of this writing, the production server (`auacm.com`) does not
-support querying a submission's result. Until the server is updated, the
-`submit` subcommand will result in an error, even though the solution file
-properly submits. Complain to  @WilliamHester if you find this annoying.
 
 ---
 

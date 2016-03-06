@@ -23,8 +23,8 @@ def problems(args=None):
     request = requests.get(auacm.BASE_URL + 'problems')
 
     if not request.ok:
-        print('There was an error getting the problems')
-        return
+        raise auacm.exceptions.ConnectionError(
+            'There was an error getting the problems')
 
     # Filter out problems that aren't similar to the query
     problem_data = request.json()['data']
@@ -32,6 +32,10 @@ def problems(args=None):
     for problem in problem_data:
         if query.lower() in problem['name'].lower():
             results.append(problem)
+
+    if not results and query:
+        raise auacm.exceptions.ProblemNotFoundError(
+            'Could not find problem named {}'.format(query))
 
     # Print the results
     for result in results:
@@ -62,16 +66,14 @@ def get_problem_info(args):
     else:
         pid = _find_pid_from_name(args.problem)
         if pid == -1:
-            print('Could not find problem named ' + args.problem)
-            exit(1)
+            raise auacm.exceptions.ProblemNotFoundError(
+                'Could not find problem named {}'.format(args.problem))
 
     response = requests.get(auacm.BASE_URL +  'problems/ ' + str(pid))
 
     if not response.ok:
-        print('There was an error retrieving the problem')
-        if auacm.DEBUG:
-            print(response.text)
-        exit(1)
+        raise auacm.exceptions.ProblemNotFoundError(
+            'There was an error getting problem id {}'.format(pid))
 
     data = response.json()['data']
 
