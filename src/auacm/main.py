@@ -62,6 +62,7 @@ def test(_):
     response = requests.get(test_url)
     if response.ok:
         print('Connection successful! ' + str(response.status_code))
+        return 'Connection successful! ' + str(response.status_code)
     else:
         raise auacm.exceptions.ConnectionError()
 

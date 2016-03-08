@@ -14,6 +14,7 @@ def subcommand(command):
     def wrapped(function):
         """Add the function to the callbacks"""
         callbacks[command] = function
+        return function
     return wrapped
 
 
