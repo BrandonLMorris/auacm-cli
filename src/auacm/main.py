@@ -41,7 +41,7 @@ def main(args):
 
     elif args[0] in utils.callbacks:
         try:
-            utils.callbacks[args[0]](args[1:])
+            print(utils.callbacks[args[0]](args[1:]) or '')
         except (ProblemNotFoundError, UnauthorizedException) as exp:
             print(exp.message)
             exit(1)
@@ -61,10 +61,9 @@ def test(_):
     test_url = auacm.BASE_URL[:-4]
     response = requests.get(test_url)
     if response.ok:
-        print('Connection successful! ' + str(response.status_code))
         return 'Connection successful! ' + str(response.status_code)
     else:
-        raise auacm.exceptions.ConnectionError()
+        raise auacm.exceptions.ConnectionError('Could not connect to server')
 
 
 if __name__ == '__main__':

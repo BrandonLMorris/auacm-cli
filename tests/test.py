@@ -8,3 +8,4 @@ if __name__ == '__main__':
         unittest.defaultTestLoader.discover(
             start_dir='.',
             pattern='*_tests.py'))
+

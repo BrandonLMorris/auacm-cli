@@ -14,9 +14,10 @@ def whoami(*args):
     """Return basic info about the currently logged in user"""
     r = requests.get(auacm.BASE_URL + 'me', cookies={'session': auacm.session})
     if r.ok:
-        print('User info:')
+        return_value = 'User info:\n'
         for key, val in r.json()['data'].items():
-            print('    |{} => {}'.format(key, val))
+            return_value += '    |{} => {}\n'.format(key, val)
+        return return_value
     elif r.status_code == 401:
         raise auacm.exceptions.UnauthorizedException('You are not logged in')
 
@@ -44,9 +45,7 @@ def login(*args):
             'password': password
         })
 
-    if response.ok:
-        print('Success!')
-    else:
+    if not response.ok:
         raise auacm.exceptions.ConnectionError(
             'There was an error attempting to log in')
 
@@ -57,3 +56,5 @@ def login(*args):
         'w')
     session_f.write(auacm.session + '\n')
     session_f.close()
+
+    return 'Success!'
