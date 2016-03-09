@@ -9,15 +9,20 @@ import auacm
 from auacm.utils import subcommand, _find_pid_from_name
 
 @subcommand('problem')
+@subcommand('problems')
 def problems(args=None):
     """Get all the problems, or search for a specific one"""
 
     # Some minimal argument parsing
-    verbose = True if args and args[0] in {'-v', '--verbose'} else False
-    if verbose:
-        query = args[1] if len(args) > 1 else ''
-    else:
-        query = args[0] if args else ''
+    parser = argparse.ArgumentParser(
+        add_help=False,
+        usage='problem [-v/--verbose] [-i/--id] <problem>'
+    )
+    parser.add_argument('-v', '--verbose', action='store_true')
+    parser.add_argument('-i', '--id', action='store_true')
+    parser.add_argument('problem', nargs='?', default='')
+    args = parser.parse_args(args)
+    query = args.problem
 
     # GET request to the API
     request = requests.get(auacm.BASE_URL + 'problems')
@@ -32,6 +37,8 @@ def problems(args=None):
     for problem in problem_data:
         if query.lower() in problem['name'].lower():
             results.append(problem)
+        elif args.id and args.id == problem['pid']:
+            results.append(problem)
 
     if not results and query:
         raise auacm.exceptions.ProblemNotFoundError(
@@ -40,7 +47,7 @@ def problems(args=None):
     # Print the results
     for result in results:
         print(result['name'])
-        if verbose:
+        if args.verbose:
             print('    | added: ' + str(result['added']))
             print('    | appeared: ' + result['appeared'])
             print('    | difficulty: ' + str(result['difficulty']))
