@@ -9,7 +9,6 @@ import auacm
 from auacm.utils import subcommand, _find_pid_from_name
 
 @subcommand('problem')
-@subcommand('problems')
 def problems(args=None):
     """Get all the problems, or search for a specific one"""
 
@@ -35,9 +34,9 @@ def problems(args=None):
     problem_data = request.json()['data']
     results = list()
     for problem in problem_data:
-        if query.lower() in problem['name'].lower():
+        if not args.id and query.lower() in problem['name'].lower():
             results.append(problem)
-        elif args.id and args.id == problem['pid']:
+        elif args.id and query == str(problem['pid']):
             results.append(problem)
 
     if not results and query:
@@ -45,20 +44,28 @@ def problems(args=None):
             'Could not find problem named {}'.format(query))
 
     # Print the results
+    return_value = ''
     for result in results:
-        print(result['name'])
+        return_value += result['name'] + '\n'
         if args.verbose:
-            print('    | added: ' + str(result['added']))
-            print('    | appeared: ' + result['appeared'])
-            print('    | difficulty: ' + str(result['difficulty']))
-            print('    | pid: ' + str(result['pid']))
-            print('    | shortname: ' + result['shortname'])
-            print('    | solved: ' + str(result['solved']))
-            print('    | url: ' + result['url'])
+            return_value += textwrap.dedent("""\
+                |    added: {}
+                |    appeared: {}
+                |    difficulty: {}
+                |    pid: {}
+                |    shortname: {}
+                |    solved: {}
+                |    url: {}\n
+            """.format(
+                result['added'], result['appeared'],
+                result['difficulty'], result['pid'],
+                result['shortname'], result['solved'], result['url']))
+
+    return return_value.strip()
 
 
 @subcommand('problem-info')
-def get_problem_info(args):
+def get_problem_info(args=None):
     """Get detailed data on a problem (description, input, etc.)"""
     parser = argparse.ArgumentParser(
         add_help=False,
@@ -84,8 +91,8 @@ def get_problem_info(args):
 
     data = response.json()['data']
 
-    # Print all the results
-    print(textwrap.dedent('''
+    # Gather all the results
+    return_value = textwrap.dedent('''
         Name: {}
 
         Description
@@ -96,20 +103,22 @@ def get_problem_info(args):
 
         Output
         {}
-        '''.format(
+        ''').format(
             data['name'],
             data['description'],
             data['input_desc'],
             data['output_desc']
-            )))
+            )
 
     for case in data['sample_cases']:
-        print('Sample Case {}'.format(case['case_num']))
-        print('Input:')
-        print(case['input'])
-        print()
+        return_value += textwrap.dedent('''
+        Sample Case {}
+        Input:
+        {}
 
-        print('Output:')
-        print(case['output'])
-        print()
+        Output:
+        {}
+        ''').format(case['case_num'], case['input'], case['output'])
+
+    return return_value.strip()
 
