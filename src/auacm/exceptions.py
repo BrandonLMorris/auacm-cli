@@ -42,3 +42,15 @@ class InvalidSubmission(Exception):
 
     def __str__(self):
         return self.message
+
+
+class CompetitionNotFoundError(Exception):
+    """Represents a failed attempt to locate a competition on the server"""
+
+    def __init__(self, message):
+        super(CompetitionNotFoundError, self).__init__(message)
+        self.message = message
+
+    def __str__(self):
+        return self.message
+

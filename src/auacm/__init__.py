@@ -1,6 +1,6 @@
 """AUACM top package"""
 
-import auacm.common, auacm.main, auacm.user, auacm.problems, auacm.submit, auacm.exceptions
+import auacm.common, auacm.main, auacm.user, auacm.problems, auacm.submit, auacm.competition, auacm.exceptions
 from auacm.common import DEBUG, BASE_URL, logo, session
 import auacm.utils
 

@@ -14,7 +14,7 @@ class CompetitionTests(unittest.TestCase):
         """Successfully get all the competitions"""
         mock_get.return_value = MockResponse(json=COMPETITIONS_RESPONSE)
 
-        result = auacm.competiton.get_comps()
+        result = auacm.competition.get_comps()
 
         self.assertTrue('upcoming fake mock' in result.lower())
         self.assertTrue('ongoing fake mock' in result.lower())
@@ -38,7 +38,7 @@ class CompetitionTests(unittest.TestCase):
         mock_get.return_value = MockResponse(ok=False, status_code=404)
 
         self.assertRaises(
-            auacm.exceptions.CompetitionNotFound,
+            auacm.exceptions.CompetitionNotFoundError,
             auacm.competition.get_comps, ['99999999'])
 
 
