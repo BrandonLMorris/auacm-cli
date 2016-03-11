@@ -57,3 +57,7 @@ class AuthenticationTest(unittest.TestCase):
 
         returned = auacm.user.whoami([])
         self.assertTrue('username' in returned)
+
+
+if __name__ == '__main__':
+    unittest.main()

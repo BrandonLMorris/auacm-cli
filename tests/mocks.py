@@ -49,6 +49,64 @@ PROBLEM_VERBOSE = {
     }
 }
 
+COMPETITIONS_RESPONSE = {
+    'data': {
+        'upcoming': [{
+            'cid': 1,
+            'closed': False,
+            'name': 'Upcoming Fake Mock',
+            'registered': False,
+            'startTime': 0
+        }],
+        'ongoing': [{
+            'cid': 2,
+            'closed': False,
+            'name': 'Ongoing Fake Mock',
+            'registered': False,
+            'startTime': 0
+        }],
+        'past': [{
+            'cid': 3,
+            'closed': False,
+            'name': 'Past Fake Mock',
+            'registered': False,
+            'startTime': 0
+        }]
+    }
+}
+
+COMPETITION_DETAIL = {
+    'data': {
+        'compProblems': {
+            'A': {
+                'name': 'Fake Problem A',
+                'pid': 1,
+                'shortname': 'fake1'
+            }
+        },
+        'competition': {
+            'cid': 2,
+            'closed': False,
+            'name': 'Ongoing Fake Mock',
+            'length': 8,
+            'registered': False,
+            'startTime': 7
+        },
+        'teams': [{
+            'name': 'Brando The Mando',
+            'problemData': {
+                '1': {
+                    'label': 'A',
+                    'status': 'incorrect',
+                    'submitCount': '0',
+                    'submitTime': '0'
+                }
+            },
+            'users': ['brandonm']
+        }]
+    }
+}
+
 class MockResponse(object): # pylint: disable=too-few-public-methods
     """Fake response object returned from patched request methods"""
     def __init__(self, **kwargs):

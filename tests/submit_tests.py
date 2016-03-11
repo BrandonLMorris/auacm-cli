@@ -35,3 +35,7 @@ class SubmitTests(unittest.TestCase):
             auacm.exceptions.InvalidSubmission,
             auacm.submit.submit, ['problem 1', 'notafile.cpp'])
 
+
+if __name__ == '__main__':
+    unittest.main()
+
