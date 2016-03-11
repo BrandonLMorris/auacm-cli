@@ -7,7 +7,7 @@ The central entry point of the auacm app.
 import requests, sys, textwrap
 import auacm
 import auacm.utils as utils
-from auacm.exceptions import ConnectionError, ProblemNotFoundError, UnauthorizedException, InvalidSubmission
+from auacm.exceptions import ConnectionError, ProblemNotFoundError, UnauthorizedException, InvalidSubmission, CompetitionNotFoundError
 
 def main(args):
     """
@@ -44,7 +44,8 @@ def main(args):
             print(utils.callbacks[args[0]](args[1:]) or '')
         except (ProblemNotFoundError,
                 UnauthorizedException,
-                InvalidSubmission) as exp:
+                InvalidSubmission,
+                CompetitionNotFoundError) as exp:
             print(exp.message)
             exit(1)
         except (requests.exceptions.ConnectionError, ConnectionError):
