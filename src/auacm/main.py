@@ -37,6 +37,7 @@ def main(args):
             problem [-v/--verbose] search for a problem
             submit [-i/--id][-p/--python {2, 3}] <problem> <file>
             problem-info [-i/--id] <problem>
+            competitions [[-i/--id] <competition>]
         '''))
 
     elif args[0] in utils.callbacks:

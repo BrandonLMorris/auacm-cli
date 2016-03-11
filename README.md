@@ -81,6 +81,21 @@ to indicate the version of Python. The default is Python 3.
 
 After you submit, `auacm` will query your submission to obtain the results.
 
+## Competitions
+
+The `competition` subcommand can list competitions, and give a detailed view
+of a particular competition. To see all competitions, run
+
+`$ auacm competitions`
+
+To get more info about a specific competition, run the command with the
+competition name afterword (multi-word queries need to be enclosed in spaces).
+
+`$ auacm competitions "october 15th"
+
+Similar to problems, you can also search for a competition using it's unique
+competition id with the `-i` or `--id` flag.
+
 ---
 
 ## Bugs? Improvements? Funny jokes?
