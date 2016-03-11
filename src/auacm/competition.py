@@ -117,7 +117,7 @@ def _format_teams(teams):
 def _format_problems(probs):
     """Return a formatted string of the problems passed in"""
     result = ''
-    for label, prob in probs.items():
+    for label, prob in sorted(probs.items()):
         result += '{}\t{} ({})\n'.format(label, prob['name'], prob['pid'])
     return result.strip()
 
