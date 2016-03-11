@@ -9,6 +9,7 @@ import auacm
 import argparse
 import time
 from auacm.utils import subcommand, _find_pid_from_name
+from auacm.exceptions import InvalidSubmission
 
 # Map server status results to output strings
 RESULTS = {
@@ -20,7 +21,7 @@ RESULTS = {
 }
 
 @subcommand('submit')
-def submit(args):
+def submit(args=None, tty=True):
     """Submit a solution"""
 
     # Some basic argument parsing
@@ -38,8 +39,7 @@ def submit(args):
     try:
         submit_file = {'file': open(args.filename, 'rb')}
     except IOError:
-        print('Error: Could not open file ' + args.filename)
-        exit(1)
+        raise InvalidSubmission('Error: Could not open file ' + args.filename)
 
     if args.id:
         data = {'pid': args.problem}
@@ -70,15 +70,20 @@ def submit(args):
             raise auacm.exceptions.UnauthorizedException(
                 'You are not logged in')
 
-    print('Successful submit. Getting results...')
+    return_value = 'Successful submit. Getting results...'
+    return_value = 'Running...'
+    if tty:
+        print(return_value)
     job_id = response.json()['data']['submissionId']
-    print('Running...')
     status = 'start'
     while status == 'start':
         response = requests.get(auacm.BASE_URL + 'submit/' + str(job_id))
         status = response.json()['data']['status']
         if status != 'start':
-            print(RESULTS[status])
+            return_value += RESULTS[status]
+            if tty: print(RESULTS[status])
         else:
             time.sleep(1)
+
+    if not tty: return return_value
 

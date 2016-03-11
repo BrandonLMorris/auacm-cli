@@ -7,7 +7,7 @@ The central entry point of the auacm app.
 import requests, sys, textwrap
 import auacm
 import auacm.utils as utils
-from auacm.exceptions import ConnectionError, ProblemNotFoundError, UnauthorizedException
+from auacm.exceptions import ConnectionError, ProblemNotFoundError, UnauthorizedException, InvalidSubmission
 
 def main(args):
     """
@@ -42,7 +42,9 @@ def main(args):
     elif args[0] in utils.callbacks:
         try:
             print(utils.callbacks[args[0]](args[1:]) or '')
-        except (ProblemNotFoundError, UnauthorizedException) as exp:
+        except (ProblemNotFoundError,
+                UnauthorizedException,
+                InvalidSubmission) as exp:
             print(exp.message)
             exit(1)
         except (requests.exceptions.ConnectionError, ConnectionError):
@@ -56,7 +58,7 @@ def main(args):
 
 
 @utils.subcommand('test')
-def test(_):
+def test(_=None):
     """Try to connect to the server"""
     test_url = auacm.BASE_URL[:-4]
     response = requests.get(test_url)

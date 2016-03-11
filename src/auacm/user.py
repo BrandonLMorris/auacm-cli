@@ -10,7 +10,7 @@ from auacm import utils
 
 
 @utils.subcommand('whoami')
-def whoami(*args):
+def whoami(args=None):
     """Return basic info about the currently logged in user"""
     r = requests.get(auacm.BASE_URL + 'me', cookies={'session': auacm.session})
     if r.ok:
@@ -23,7 +23,7 @@ def whoami(*args):
 
 
 @utils.subcommand('logout')
-def logout(*args):
+def logout(args=None):
     """Log the user out of the current session"""
     # Erase the contents of the session file
     open(
@@ -34,7 +34,7 @@ def logout(*args):
 
 
 @utils.subcommand('login')
-def login(*args):
+def login(args=None):
     """Log a user in to the website. Keeps up with session data"""
     username = input('Username: ')
     password = getpass.getpass('Password: ')
