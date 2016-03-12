@@ -79,20 +79,96 @@ def get_one_comp(args):
         {}
         ''').format(comp_str, teams, problems)
 
+
+@subcommand('score')
+@subcommand('scoreboard')
+def get_scoreboard(args=None):
+    """Get the scoreboard from a competition"""
+    parser = argparse.ArgumentParser(
+        add_help=False,
+        usage='scoreboard [-i/--id] [<competition>]'
+    )
+    parser.add_argument('-i', '--id', action='store_true')
+    parser.add_argument('-v', '--verbose', action='store_true')
+    parser.add_argument('-p', '--problems', action='store_true')
+    parser.add_argument('competition', nargs='?', default='')
+    args = parser.parse_args(args)
+
+    # Get the competition id
+    if not args.competition:
+        # Default to the most recent competition (greatest cid)
+        comps = requests.get(auacm.BASE_URL + 'competitions').json()['data']
+        cid = -1
+        for comp in comps['upcoming'] + comps['ongoing'] + comps['past']:
+            cid = max(cid, comp['cid'])
+
+    elif args.id:
+        cid = args.competition
+
+    else:
+        cid = _cid_from_name(args.competition)
+
+    if cid == -1:
+        raise CompetitionNotFoundError(
+            'No competition found: ' + args.competition)
+
+    response = requests.get(auacm.BASE_URL + 'competitions/' + str(cid))
+    if not response.ok or response.status_code == 404:
+        raise CompetitionNotFoundError(
+            'Could not find competition with id: ' + str(cid))
+
+    competition = response.json()['data']
+    teams = list()
+    for team in competition['teams']:
+        _team = {'name': team['name'], 'correct': 0, 'time': 0}
+        for prob in team['problemData'].items():
+            prob = prob[1]
+            if prob['status'] == 'correct':
+                _team['correct'] += 1
+                _team['time'] += int(prob['submitTime'])
+                if int(prob['submitCount']) > 1:
+                    _team['time'] += 20 * (int(prob['submitCount']) - 1)
+        teams.append(_team)
+
+    teams.sort(key=lambda t: (-t['correct'], t['time']))
+    teams_str = ''
+    for i in range(len(teams)):
+        teams_str += '{}\t{}\t{}\t{}\n'.format(
+            i+1,
+            (teams[i]['name'] + ' ' * 15)[:15],
+            teams[i]['correct'],
+            teams[i]['time'])
+
+    result = textwrap.dedent("""
+        [{}]
+
+        Rank\tTeam\t\tSolved\tTime
+        ====\t====\t\t======\t====
+        {}""").format(competition['competition']['name'], teams_str).strip()
+
+    # Handle problem parsing if asked for
+    if args.problems or args.verbose:
+        problems_str = ''
+        for problem in competition['compProblems'].items():
+            problems_str += problem[0] + ': ' + problem[1]['name'] + '\n'
+            for team in competition['teams']:
+                problems_str += '|\t{}: {}\n'.format(
+                    team['name'],
+                    team['problemData'][str(problem[1]['pid'])]['submitTime'])
+        result += '\n\n' + problems_str
+
+    return result
+
+
 def _cid_from_name(comp_name):
     """Return the competition of an id based on it's name"""
     comps = requests.get(auacm.BASE_URL + 'competitions').json()['data']
-    for comp in comps['upcoming']:
-        if comp_name.lower() in comp['name'].lower():
-            return int(comp['cid'])
-    for comp in comps['ongoing']:
-        if comp_name.lower() in comp['name'].lower():
-            return int(comp['cid'])
-    for comp in comps['past']:
+    for comp in comps['upcoming'] + comps['ongoing'] + comps['past']:
         if comp_name.lower() in comp['name'].lower():
             return int(comp['cid'])
 
     return -1
+
 
 def _format_comps(comps):
     """Return a formatted string for a list of competitions"""
@@ -102,6 +178,7 @@ def _format_comps(comps):
             comp['name'], comp['cid'], _get_start_date(comp['startTime'])))
 
     return '\n'.join(result)
+
 
 def _format_teams(teams):
     """Return a formatted string of the teams passed in"""
@@ -114,6 +191,7 @@ def _format_teams(teams):
         result += '\n'
     return result.strip()
 
+
 def _format_problems(probs):
     """Return a formatted string of the problems passed in"""
     result = ''
@@ -121,6 +199,8 @@ def _format_problems(probs):
         result += '{}\t{} ({})\n'.format(label, prob['name'], prob['pid'])
     return result.strip()
 
+
 def _get_start_date(start_time):
     """Return a formatted date string from a competition start time"""
     return datetime.fromtimestamp(start_time).strftime('%m-%d-%Y %H:%M:%S')
+

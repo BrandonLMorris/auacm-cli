@@ -97,9 +97,9 @@ COMPETITION_DETAIL = {
             'problemData': {
                 '1': {
                     'label': 'A',
-                    'status': 'incorrect',
-                    'submitCount': '0',
-                    'submitTime': '0'
+                    'status': 'correct',
+                    'submitCount': '1',
+                    'submitTime': '10'
                 }
             },
             'users': ['brandonm']
