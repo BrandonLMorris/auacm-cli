@@ -149,12 +149,28 @@ def get_scoreboard(args=None):
     # Handle problem parsing if asked for
     if args.problems or args.verbose:
         problems_str = ''
+
         for problem in competition['compProblems'].items():
             problems_str += problem[0] + ': ' + problem[1]['name'] + '\n'
+            pid = str(problem[1]['pid'])
+
             for team in competition['teams']:
-                problems_str += '|\t{}: {}\n'.format(
-                    team['name'],
-                    team['problemData'][str(problem[1]['pid'])]['submitTime'])
+                # Add a team's submit time if they got it right
+                submit_time = team['problemData'][pid]['submitTime']
+
+                if submit_time != 0:
+                    # Account for penalty time
+                    penalty = 20 * team['problemData'][pid]['submitCount']
+                    penalty -= 20
+
+                    problems_str += '|\t{}: {}'.format(
+                        team['name'],
+                        team['problemData'][pid]['submitTime'])
+
+                    # Add penaly if any
+                    problems_str += ('(' + str(penalty) + ')\n' if penalty != 0
+                                     else '\n')
+
         result += '\n\n' + problems_str
 
     return result
