@@ -64,5 +64,43 @@ class CompetitionTests(unittest.TestCase):
             auacm.competition.get_comps, ['-i', '99999999'])
 
 
+class ScoreboardTests(unittest.TestCase):
+    """Tests related to the scoreboard"""
+
+    @patch('requests.get')
+    def testGetScoreboardGood(self, mock_get):
+        """Get a valid scoreboard from a competition"""
+        mock_get.return_value = MockResponse(json=COMPETITION_DETAIL)
+
+        result = auacm.competition.get_scoreboard(['-i', '2'])
+        self.assertTrue(('brando the mando' + ' ' * 15)[:15] in result.lower())
+        self.assertTrue('rank' in result.lower())
+        self.assertTrue('solved' in result.lower())
+        self.assertTrue('time' in result.lower())
+
+    @patch('requests.get')
+    def testGetScoreboardBad(self, mock_get):
+        """Attepmpt toget a scoreboard from a comeptition that doesn't exist"""
+        mock_get.side_effect = [
+            MockResponse(json=COMPETITIONS_RESPONSE), MockResponse(ok=False)]
+
+        self.assertRaises(
+            auacm.exceptions.CompetitionNotFoundError,
+            auacm.competition.get_scoreboard, ['electric boogaloo'])
+
+    @patch('requests.get')
+    def testGetScoreboardWithProblems(self, mock_get):
+        """Get a scoreboard with the problem statuses"""
+        mock_get.side_effect = [
+            MockResponse(json=COMPETITIONS_RESPONSE),
+            MockResponse(json=COMPETITION_DETAIL)]
+
+        result = auacm.competition.get_scoreboard(['-v', 'ongoing'])
+
+        self.assertTrue('A: Fake Problem A' in result)
+        self.assertTrue('Brando The Mando: 10' in result)
+
+
+
 if __name__ == '__main__':
     unittest.main()
