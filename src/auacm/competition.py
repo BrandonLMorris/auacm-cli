@@ -14,6 +14,7 @@ def get_comps(args=None):
 
     response = requests.get(auacm.BASE_URL + 'competitions')
 
+    # Prettify all the competitions
     comps = response.json()['data']
     current = _format_comps(comps['ongoing'])
     upcoming = _format_comps(comps['upcoming'])
@@ -46,6 +47,7 @@ def get_one_comp(args):
     args = parser.parse_args(args)
 
     if not args.id:
+        # Look up the competition by name
         cid = _cid_from_name(args.competition)
         if cid == -1:
             raise CompetitionNotFoundError(
@@ -117,24 +119,33 @@ def get_scoreboard(args=None):
         raise CompetitionNotFoundError(
             'Could not find competition with id: ' + str(cid))
 
+    # Parse the response to gather the teams and ranking
     competition = response.json()['data']
     teams = list()
     for team in competition['teams']:
         _team = {'name': team['name'], 'correct': 0, 'time': 0}
+
+        # Tally the team solve count and total time
         for prob in team['problemData'].items():
             prob = prob[1]
             if prob['status'] == 'correct':
                 _team['correct'] += 1
                 _team['time'] += int(prob['submitTime'])
+
+                # Account for penalty time
                 if int(prob['submitCount']) > 1:
                     _team['time'] += 20 * (int(prob['submitCount']) - 1)
         teams.append(_team)
 
+    # Sort the teams first by ranking, than by total time
     teams.sort(key=lambda t: (-t['correct'], t['time']))
+
+    # Build up the response string
     teams_str = ''
     for i in range(len(teams)):
         teams_str += '{}\t{}\t{}\t{}\n'.format(
             i+1,
+            # Cut long names short
             (teams[i]['name'] + ' ' * 15)[:15],
             teams[i]['correct'],
             teams[i]['time'])
@@ -147,9 +158,11 @@ def get_scoreboard(args=None):
         {}""").format(competition['competition']['name'], teams_str).strip()
 
     # Handle problem parsing if asked for
+    # TODO: Refactor into a function
     if args.problems or args.verbose:
         problems_str = ''
 
+        # Iterate through as as (pid, data_dictionary) tuples
         for problem in competition['compProblems'].items():
             problems_str += problem[0] + ': ' + problem[1]['name'] + '\n'
             pid = str(problem[1]['pid'])
@@ -160,7 +173,7 @@ def get_scoreboard(args=None):
 
                 if submit_time != 0:
                     # Account for penalty time
-                    penalty = 20 * team['problemData'][pid]['submitCount']
+                    penalty = 20 * int(team['problemData'][pid]['submitCount'])
                     penalty -= 20
 
                     problems_str += '|\t{}: {}'.format(
