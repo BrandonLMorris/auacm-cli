@@ -6,7 +6,7 @@ Module for handling problem related commands
 
 import requests, argparse, textwrap
 import auacm
-from auacm.utils import subcommand, _find_pid_from_name
+from auacm.utils import subcommand, _find_pid_from_name, format_str_len
 
 @subcommand('problem')
 def problems(args=None):
@@ -105,9 +105,9 @@ def get_problem_info(args=None):
         {}
         ''').format(
             data['name'],
-            data['description'],
-            data['input_desc'],
-            data['output_desc']
+            format_str_len(data['description'], 80),
+            format_str_len(data['input_desc'], 80),
+            format_str_len(data['output_desc'], 80)
             )
 
     for case in data['sample_cases']:
