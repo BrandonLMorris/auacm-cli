@@ -7,6 +7,11 @@ Module for handling problem related commands
 import requests, argparse, textwrap, os, string
 import auacm
 from auacm.utils import subcommand, _find_pid_from_name, format_str_len
+from subprocess import Popen, PIPE, STDOUT
+try:
+    from io import StringIO
+except ImportError:
+    from cStringIo import StringIO
 
 @subcommand('problem')
 def problems(args=None):
@@ -170,3 +175,70 @@ def init_problem_directory(args=None):
         out_file.close()
 
     return 'Done!'
+
+
+@subcommand('test')
+def test_solution(args=None):
+    """Run a solution against sample cases"""
+    parser = argparse.ArgumentParser(
+        add_help=False,
+        usage='test [-p {2,3}] <solution> [-i [<problem>]]'
+    )
+    parser.add_argument('-p', '--python', type=int, choices=[2, 3])
+    parser.add_argument('solution')
+    parser.add_argument('-i', '--id', action='store_true')
+    parser.add_argument('problem', nargs='?', default=None)
+    args = parser.parse_args(args)
+
+    # Make sure that we can support this filetype
+    if not args.solution.endswith('.py'):
+        raise Exception('Can only test Python solutions')
+
+    # Get the sample cases for the problem
+    if args.problem:
+        if args.id:
+            pid = int(args.problem)
+        else:
+            pid = _find_pid_from_name(args.problem)
+    else:
+        # Get the problem name from the solution file
+        pid = _find_pid_from_name(args.solution.split('.')[0])
+
+    if pid == -1:
+        raise auacm.exceptions.ProblemNotFoundError(
+            'Could not frind problem: ' +
+            args.problem or args.solution.split('.')[0])
+
+    if not args.python or args.python == 3:
+        run_cmd = 'python3'
+    else:
+        run_cmd = 'python2.7'
+
+    response = requests.get(auacm.BASE_URL + 'problems/' + str(pid))
+    cases = response.json()['data']['sample_cases']
+    for case in cases:
+        proc = Popen([run_cmd, args.solution],
+                     stdout=PIPE,
+                     stdin=PIPE,
+                     stderr=STDOUT,
+                     universal_newlines=True)
+        result = proc.communicate(input=case['input'])[0]
+        if proc.returncode != 0:
+            return 'Runtime error\n' + str(result)
+
+        result_lines = result.splitlines()
+        answer_lines = case['output'].splitlines()
+        if len(result_lines) != len(answer_lines):
+            return 'Wrong number of lines\n' + str(result_lines) + '\n' + str(answer_lines)
+
+        for i in range(len(result_lines)):
+            if result_lines[i] != answer_lines[i]:
+                return textwrap.dedent(
+                    """Wrong answer
+                    Expected: {}
+                    Found: {}""").format(result_lines[i], answer_lines[i])
+
+    return 'Passed all sample cases'
+
+
+
