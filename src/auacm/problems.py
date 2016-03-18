@@ -217,6 +217,7 @@ def test_solution(args=None):
     response = requests.get(auacm.BASE_URL + 'problems/' + str(pid))
     cases = response.json()['data']['sample_cases']
     for case in cases:
+        # Execute the test solution
         proc = Popen([run_cmd, args.solution],
                      stdout=PIPE,
                      stdin=PIPE,
@@ -226,17 +227,26 @@ def test_solution(args=None):
         if proc.returncode != 0:
             return 'Runtime error\n' + str(result)
 
+        # Compare the results to the solution
         result_lines = result.splitlines()
         answer_lines = case['output'].splitlines()
         if len(result_lines) != len(answer_lines):
-            return 'Wrong number of lines\n' + str(result_lines) + '\n' + str(answer_lines)
+            return textwrap.dedent("""
+                Wrong number of lines
+                Expected {} line(s)
+                Found {} line(s)
+                """).strip().format(len(answer_lines), len(result_lines))
+
+        ('Wrong number of lines\n' + str(result_lines) + '\n' +
+                    str(answer_lines))
 
         for i in range(len(result_lines)):
             if result_lines[i] != answer_lines[i]:
-                return textwrap.dedent(
-                    """Wrong answer
+                return textwrap.dedent("""
+                    Wrong answer
                     Expected: {}
-                    Found: {}""").format(result_lines[i], answer_lines[i])
+                    Found: {}""").strip().format(answer_lines[i],
+                                                 result_lines[i])
 
     return 'Passed all sample cases'
 
