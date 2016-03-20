@@ -3,8 +3,8 @@
 # pylint: disable=invalid-name, no-name-in-module, import-error
 
 import auacm, unittest
-from unittest.mock import patch
-from mocks import MockResponse, PROBLEMS_RESPONSE, PROBLEM_VERBOSE
+from unittest.mock import patch, Mock
+from mocks import MockResponse, MockProcess, PROBLEMS_RESPONSE, PROBLEM_VERBOSE
 
 class ProblemTests(unittest.TestCase):
     """Tests relating to problems"""
@@ -66,6 +66,25 @@ class ProblemTests(unittest.TestCase):
         self.assertTrue('Input' in result)
         self.assertTrue('Output' in result)
         self.assertTrue('Sample Case 1' in result)
+
+
+class SolutionTestTests(unittest.TestCase):
+    """Tests for testing solution to problems"""
+
+    @patch('requests.get')
+    @patch('subprocess.Popen')
+    def testSolutionGood(self, mock_process, mock_response):
+        """Test a passing solutoin"""
+        mock_response.side_effect = [
+            MockResponse(json=PROBLEMS_RESPONSE),
+            MockResponse(json=PROBLEM_VERBOSE)]
+        answer = PROBLEM_VERBOSE['data']['sample_cases'][0]['output']
+        mock_process.return_value = Mock() #MockProcess(return_value=answer)
+        mock_process.return_value.communicate.return_value = answer
+        mock_process.return_value.returncode = 0
+        result = auacm.problems.test_solution(['fake.py'])
+
+        self.assertTrue('passed all sample cases' in result.lower())
 
 
 if __name__ == '__main__':

@@ -7,7 +7,8 @@ Module for handling problem related commands
 import requests, argparse, textwrap, os, string
 import auacm
 from auacm.utils import subcommand, _find_pid_from_name, format_str_len
-from subprocess import Popen, PIPE, STDOUT
+import subprocess
+from subprocess import PIPE, STDOUT
 try:
     from io import StringIO
 except ImportError:
@@ -218,7 +219,7 @@ def test_solution(args=None):
     cases = response.json()['data']['sample_cases']
     for case in cases:
         # Execute the test solution
-        proc = Popen([run_cmd, args.solution],
+        proc = subprocess.Popen([run_cmd, args.solution],
                      stdout=PIPE,
                      stdin=PIPE,
                      stderr=STDOUT,
