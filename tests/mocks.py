@@ -138,7 +138,7 @@ class MockProcess(object): # pylint: disable=too-few-public-methods
     def __init__(self, **kwargs):
         """Create the fake process"""
         self.returncode = kwargs.get('returncode', 0)
-        self.return_value = kwargs.get('return_value_', '')
+        self.return_value = kwargs.get('return_value', '')
 
     def communicate(self, *args, **kwargs):
         """Simulate feeding input to the process and getting a return value"""

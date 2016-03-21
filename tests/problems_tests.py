@@ -79,12 +79,34 @@ class SolutionTestTests(unittest.TestCase):
             MockResponse(json=PROBLEMS_RESPONSE),
             MockResponse(json=PROBLEM_VERBOSE)]
         answer = PROBLEM_VERBOSE['data']['sample_cases'][0]['output']
-        mock_process.return_value = Mock() #MockProcess(return_value=answer)
-        mock_process.return_value.communicate.return_value = answer
-        mock_process.return_value.returncode = 0
+        mock_process.return_value = MockProcess(return_value=answer)
         result = auacm.problems.test_solution(['fake.py'])
 
         self.assertTrue('passed all sample cases' in result.lower())
+
+    @patch('requests.get')
+    @patch('subprocess.Popen')
+    def testSolutionBad(self, mock_process, mock_response):
+        """Test a failing solution"""
+        mock_response.side_effect = [
+            MockResponse(json=PROBLEMS_RESPONSE),
+            MockResponse(json=PROBLEM_VERBOSE)]
+        mock_process.return_value = MockProcess(return_value='Not the answer')
+        result = auacm.problems.test_solution(['fake.py'])
+
+        self.assertTrue('wrong answer' in result.lower())
+
+    @patch('requests.get')
+    @patch('subprocess.Popen')
+    def testSolutionError(self, mock_process, mock_response):
+        """Test a solution that produces a runtime error"""
+        mock_response.side_effect = [
+            MockResponse(json=PROBLEMS_RESPONSE),
+            MockResponse(json=PROBLEM_VERBOSE)]
+        mock_process.return_value = MockProcess(returncode=1)
+        result = auacm.problems.test_solution(['fake.py'])
+
+        self.assertTrue('runtime error' in result.lower())
 
 
 if __name__ == '__main__':
