@@ -9,10 +9,25 @@ import auacm
 from auacm.utils import subcommand, _find_pid_from_name, format_str_len
 import subprocess
 from subprocess import PIPE, STDOUT
-try:
-    from io import StringIO
-except ImportError:
-    from cStringIo import StringIO
+from shlex import split
+
+ALLOWED_EXTENSIONS = ['java', 'c', 'cpp', 'py', 'go']
+COMPILE_COMMAND = {
+    'java': 'javac {0}.java',
+    'py': 'NO COMPILE',
+    'py3': 'NO COMPILE',
+    'c': 'gcc {0}.c -o {0}',
+    'cpp': 'g++ {0}.cpp -o {0}',
+    'go': 'go build -o {0} {0}.go'
+}
+RUN_COMMAND = {
+    'java': 'java -cp {0} {1}',
+    'py3': 'python2.7 {0}/{1}.py',
+    'py': 'python3 {0}/{1}.py',
+    'c': '{0}/{1}',
+    'cpp': '{0}/{1}',
+    'go': '{0}/{1}'
+}
 
 @subcommand('problem')
 def problems(args=None):
@@ -191,9 +206,10 @@ def test_solution(args=None):
     parser.add_argument('problem', nargs='?', default=None)
     args = parser.parse_args(args)
 
+
     # Make sure that we can support this filetype
-    if not args.solution.endswith('.py'):
-        raise Exception('Can only test Python solutions')
+    if not args.solution.split('.')[1] in ALLOWED_EXTENSIONS:
+        raise Exception('Filetype not supported')
 
     # Get the sample cases for the problem
     if args.problem:
@@ -210,16 +226,20 @@ def test_solution(args=None):
             'Could not frind problem: ' +
             args.problem or args.solution.split('.')[0])
 
-    if not args.python or args.python == 3:
-        run_cmd = 'python3'
-    else:
-        run_cmd = 'python2.7'
+    # Compile the solution, if necessary
+    compiled = _compile(args.solution, args.python == 3)
+    if not compiled: return 'Compilation error'
+
+    filename, filetype = args.solution.split('.')
+    if filetype == 'py' and not args.python or args.python == 3:
+        filetype = 'py3'
+    run_cmd = RUN_COMMAND[filetype].format(os.getcwd(), filename)
 
     response = requests.get(auacm.BASE_URL + 'problems/' + str(pid))
     cases = response.json()['data']['sample_cases']
     for case in cases:
         # Execute the test solution
-        proc = subprocess.Popen([run_cmd, args.solution],
+        proc = subprocess.Popen(split(run_cmd),
                      stdout=PIPE,
                      stdin=PIPE,
                      stderr=STDOUT,
@@ -250,6 +270,15 @@ def test_solution(args=None):
                                                  result_lines[i])
 
     return 'Passed all sample cases'
+
+
+def _compile(solution, py2=False):
+    """Attempt to compile a solution, return True if successful"""
+    filename, filetype = solution.split('.')
+    if COMPILE_COMMAND[filetype] == 'NO COMPILE': return True
+
+    # Execute compilation and return success
+    return subprocess.call(split(COMPILE_COMMAND[filetype].format(filename))) == 0
 
 
 
