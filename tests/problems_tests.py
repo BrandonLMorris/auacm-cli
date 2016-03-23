@@ -3,7 +3,7 @@
 # pylint: disable=invalid-name, no-name-in-module, import-error
 
 import auacm, unittest
-from unittest.mock import patch, Mock
+from unittest.mock import patch
 from mocks import MockResponse, MockProcess, PROBLEMS_RESPONSE, PROBLEM_VERBOSE
 
 class ProblemTests(unittest.TestCase):
@@ -15,8 +15,8 @@ class ProblemTests(unittest.TestCase):
         mock_get.return_value = MockResponse(json=PROBLEMS_RESPONSE)
 
         result = auacm.problems.problems()
-        self.assertTrue('Fake Problem 1' in result)
-        self.assertTrue('Fake Problem 2' in result)
+        self.assertIn('Fake Problem 1', result)
+        self.assertIn('Fake Problem 2', result)
 
     @patch('requests.get')
     def testGetProblemByName(self, mock_get):
@@ -25,7 +25,7 @@ class ProblemTests(unittest.TestCase):
 
         result = auacm.problems.problems(['1'])
         self.assertEqual(1, len(result.splitlines()))
-        self.assertTrue('Fake Problem 1' in result)
+        self.assertIn('Fake Problem 1', result)
 
     @patch('requests.get')
     def testBadGetProblemName(self, mock_get):
@@ -43,7 +43,7 @@ class ProblemTests(unittest.TestCase):
 
         result = auacm.problems.problems(['-i', '2'])
         self.assertEqual(1, len(result.splitlines()))
-        self.assertTrue('Fake Problem 2' in result)
+        self.assertIn('Fake Problem 2', result)
 
     @patch('requests.get')
     def testBadGetProblemId(self, mock_get):
@@ -62,10 +62,10 @@ class ProblemTests(unittest.TestCase):
             MockResponse(json=PROBLEM_VERBOSE)]
 
         result = auacm.problems.get_problem_info(['problem 1'])
-        self.assertTrue('Name: Fake Problem 1' in result)
-        self.assertTrue('Input' in result)
-        self.assertTrue('Output' in result)
-        self.assertTrue('Sample Case 1' in result)
+        self.assertIn('Name: Fake Problem 1', result)
+        self.assertIn('Input', result)
+        self.assertIn('Output', result)
+        self.assertIn('Sample Case 1', result)
 
 
 class SolutionTestTests(unittest.TestCase):
@@ -82,7 +82,7 @@ class SolutionTestTests(unittest.TestCase):
         mock_process.return_value = MockProcess(return_value=answer)
         result = auacm.problems.test_solution(['fake.py'])
 
-        self.assertTrue('passed all sample cases' in result.lower())
+        self.assertIn('passed all sample cases', result.lower())
 
     @patch('requests.get')
     @patch('subprocess.Popen')
@@ -94,7 +94,7 @@ class SolutionTestTests(unittest.TestCase):
         mock_process.return_value = MockProcess(return_value='Not the answer')
         result = auacm.problems.test_solution(['fake.py'])
 
-        self.assertTrue('wrong answer' in result.lower())
+        self.assertIn('wrong answer', result.lower())
 
     @patch('requests.get')
     @patch('subprocess.Popen')
@@ -106,7 +106,7 @@ class SolutionTestTests(unittest.TestCase):
         mock_process.return_value = MockProcess(returncode=1)
         result = auacm.problems.test_solution(['fake.py'])
 
-        self.assertTrue('runtime error' in result.lower())
+        self.assertIn('runtime error', result.lower())
 
 
 if __name__ == '__main__':

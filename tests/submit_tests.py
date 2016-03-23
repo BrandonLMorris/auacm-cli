@@ -23,8 +23,8 @@ class SubmitTests(unittest.TestCase):
             json={'data': {'submissionId': '0'}})
 
         result = auacm.submit.submit(['problem 1', 'fake.c'], False)
-        self.assertTrue('running' in result.lower())
-        self.assertTrue('correct' in result.lower())
+        self.assertIn('running', result.lower())
+        self.assertIn('correct', result.lower())
 
     @patch('builtins.open')
     def testBadFileSubmit(self, mock_open):

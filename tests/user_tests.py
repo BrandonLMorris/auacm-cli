@@ -12,7 +12,7 @@ class ConnectionTest(unittest.TestCase):
     def testConnection(self, mock_get):
         """Successful connection to the server"""
         mock_get.return_value = MockResponse()
-        self.assertTrue('success' in auacm.main.test([]))
+        self.assertIn('success', auacm.main.test([]))
 
     @patch('requests.get')
     def testBadConnection(self, mock_get):
@@ -37,7 +37,7 @@ class AuthenticationTest(unittest.TestCase):
         mock_response.return_value = MockResponse(
             cookies={'session': 'Fake session'})
 
-        self.assertTrue('success' in auacm.user.login([]).lower())
+        self.assertIn('success', auacm.user.login([]).lower())
         self.assertEqual('Fake session', auacm.session)
 
     @patch('builtins.open')
@@ -56,7 +56,7 @@ class AuthenticationTest(unittest.TestCase):
             json={'data': {'username': 'test user'}})
 
         returned = auacm.user.whoami([])
-        self.assertTrue('username' in returned)
+        self.assertIn('username', returned)
 
 
 if __name__ == '__main__':
