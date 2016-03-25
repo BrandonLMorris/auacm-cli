@@ -194,7 +194,7 @@ def init_problem_directory(args=None):
 
 
 @subcommand('test')
-def test_solution(args=None):
+def test_solution(args=None):                   # TODO: Refactor this
     """Run a solution against sample cases"""
     parser = argparse.ArgumentParser(
         add_help=False,
@@ -239,11 +239,12 @@ def test_solution(args=None):
     cases = response.json()['data']['sample_cases']
     for case in cases:
         # Execute the test solution
-        proc = subprocess.Popen(split(run_cmd),
-                     stdout=PIPE,
-                     stdin=PIPE,
-                     stderr=STDOUT,
-                     universal_newlines=True)
+        proc = subprocess.Popen(
+            split(run_cmd),
+            stdout=PIPE,
+            stdin=PIPE,
+            stderr=STDOUT,
+            universal_newlines=True)
         result = proc.communicate(input=case['input'])[0]
         if proc.returncode != 0:
             return 'Runtime error\n' + str(result)
@@ -257,9 +258,6 @@ def test_solution(args=None):
                 Expected {} line(s)
                 Found {} line(s)
                 """).strip().format(len(answer_lines), len(result_lines))
-
-        ('Wrong number of lines\n' + str(result_lines) + '\n' +
-                    str(answer_lines))
 
         for i in range(len(result_lines)):
             if result_lines[i] != answer_lines[i]:
@@ -278,7 +276,6 @@ def _compile(solution, py2=False):
     if COMPILE_COMMAND[filetype] == 'NO COMPILE': return True
 
     # Execute compilation and return success
-    return subprocess.call(split(COMPILE_COMMAND[filetype].format(filename))) == 0
-
-
+    return subprocess.call(
+        split(COMPILE_COMMAND[filetype].format(filename))) == 0
 

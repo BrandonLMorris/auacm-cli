@@ -108,6 +108,22 @@ class SolutionTestTests(unittest.TestCase):
 
         self.assertIn('runtime error', result.lower())
 
+    @patch('requests.get')
+    @patch('subprocess.Popen')
+    @patch('subprocess.call')
+    def testCCompiledSolutionGood(self, mock_call, mock_process,
+                                  mock_response):
+        """Test a compiled solution written in C that works"""
+        mock_response.side_effect = [
+            MockResponse(json=PROBLEMS_RESPONSE),
+            MockResponse(json=PROBLEM_VERBOSE)]
+        mock_call.return_value = 0
+        answer = PROBLEM_VERBOSE['data']['sample_cases'][0]['output']
+        mock_process.return_value = MockProcess(return_value=answer)
+
+        result = auacm.problems.test_solution(['fake.c'])
+        self.assertIn('passed all sample cases', result.lower())
+
 
 if __name__ == '__main__':
     unittest.main()
