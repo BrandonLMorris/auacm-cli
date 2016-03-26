@@ -194,7 +194,7 @@ def init_problem_directory(args=None):
 
 
 @subcommand('test')
-def test_solution(args=None):                   # TODO: Refactor this
+def test_solution(args=None):
     """Run a solution against sample cases"""
     parser = argparse.ArgumentParser(
         add_help=False,
@@ -212,19 +212,7 @@ def test_solution(args=None):                   # TODO: Refactor this
         raise Exception('Filetype not supported')
 
     # Get the sample cases for the problem
-    if args.problem:
-        if args.id:
-            pid = int(args.problem)
-        else:
-            pid = _find_pid_from_name(args.problem)
-    else:
-        # Get the problem name from the solution file
-        pid = _find_pid_from_name(args.solution.split('.')[0])
-
-    if pid == -1:
-        raise auacm.exceptions.ProblemNotFoundError(
-            'Could not frind problem: ' +
-            args.problem or args.solution.split('.')[0])
+    cases = _get_remote_sample_cases(args.problem, args.solution, args.id)
 
     # Compile the solution, if necessary
     compiled = _compile(args.solution, args.python == 3)
@@ -235,8 +223,6 @@ def test_solution(args=None):                   # TODO: Refactor this
         filetype = 'py3'
     run_cmd = RUN_COMMAND[filetype].format(os.getcwd(), filename)
 
-    response = requests.get(auacm.BASE_URL + 'problems/' + str(pid))
-    cases = response.json()['data']['sample_cases']
     for case in cases:
         # Execute the test solution
         proc = subprocess.Popen(
@@ -278,4 +264,32 @@ def _compile(solution, py2=False):
     # Execute compilation and return success
     return subprocess.call(
         split(COMPILE_COMMAND[filetype].format(filename))) == 0
+
+
+def _get_remote_sample_cases(problem, solution, is_id):
+    """
+    Retrieve the sample cases from the server for a problem for local testing.
+
+    :param problem: The problem name to get the test cases for, or None
+    :param solution: the file name of the local solution, if problem is None
+    :param is_id: True if the problem argument
+    :throws auacm.exceptions.ProblemNotFoundError: if cannot locate the problem
+    """
+    if problem:
+        if is_id:
+            pid = int(problem)
+        else:
+            pid = _find_pid_from_name(problem)
+    else:
+        # Get the problem name from the solution file
+        pid = _find_pid_from_name(solution.split('.')[0])
+
+    if pid == -1:
+        raise auacm.exceptions.ProblemNotFoundError(
+            'Could not frind problem: ' +
+            problem or solution.split('.')[0])
+
+
+    response = requests.get(auacm.BASE_URL + 'problems/' + str(pid))
+    return response.json()['data']['sample_cases']
 
