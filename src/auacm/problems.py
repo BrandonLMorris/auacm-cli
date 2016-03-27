@@ -4,7 +4,7 @@ problems.py
 Module for handling problem related commands
 """
 
-import requests, argparse, textwrap, os, string
+import requests, argparse, textwrap, os, string, glob, re
 import auacm
 from auacm.utils import subcommand, _find_pid_from_name, format_str_len
 import subprocess
@@ -188,6 +188,7 @@ def init_problem_directory(args=None):
 
         out_file = open(os.path.join(os.path.join(
             dir_name, 'tests', 'out' + str(case['case_num']) + '.txt')), 'w')
+        out_file.write(case['output'])
         out_file.close()
 
     return 'Done!'
@@ -203,6 +204,7 @@ def test_solution(args=None):
     parser.add_argument('-p', '--python', type=int, choices=[2, 3])
     parser.add_argument('solution')
     parser.add_argument('-i', '--id', action='store_true')
+    parser.add_argument('-l', '--local', action='store_true')
     parser.add_argument('problem', nargs='?', default=None)
     args = parser.parse_args(args)
 
@@ -212,7 +214,8 @@ def test_solution(args=None):
         raise Exception('Filetype not supported')
 
     # Get the sample cases for the problem
-    cases = _get_remote_sample_cases(args.problem, args.solution, args.id)
+    cases = (_get_remote_sample_cases(args.problem, args.solution, args.id) if
+             not args.local else _get_local_sample_cases())
 
     # Compile the solution, if necessary
     compiled = _compile(args.solution, args.python == 3)
@@ -292,4 +295,30 @@ def _get_remote_sample_cases(problem, solution, is_id):
 
     response = requests.get(auacm.BASE_URL + 'problems/' + str(pid))
     return response.json()['data']['sample_cases']
+
+def _get_local_sample_cases():
+    """Retrieve the sample cases locally from the tests/ directory"""
+    test_dir = os.path.join(os.getcwd(), 'tests')
+    in_files = glob.glob(os.path.join(test_dir, 'in*'))
+
+    if not in_files:
+        raise Exception('No test cases found in tests/ directory')
+
+    cases = list()
+    for in_file in in_files:
+        # Find the corresponding output file
+        match = re.search(r'in(\d+).txt', in_file)
+        if not match:
+            raise Exception('Test files not properly named.'
+                            'Should be in1.txt, in2.txt, ...')
+        test_num = match.group(1)
+        out_file = os.path.join(test_dir, 'out' + test_num + '.txt')
+
+        with open(out_file, 'r') as out_f, open(in_file, 'r') as in_f:
+            cases.append({
+                'input': in_f.read() + '\n',
+                'output': out_f.read()
+            })
+
+    return cases
 
