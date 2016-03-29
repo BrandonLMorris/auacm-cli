@@ -214,7 +214,8 @@ def test_solution(args=None):
         raise Exception('Filetype not supported')
 
     # Get the sample cases for the problem
-    cases = (_get_remote_sample_cases(args.problem, args.solution, args.id) if
+    solution_name = args.solution.split('/')[-1]
+    cases = (_get_remote_sample_cases(args.problem, solution_name, args.id) if
              not args.local else _get_local_sample_cases())
 
     # Compile the solution, if necessary
