@@ -16,9 +16,9 @@ class CompetitionTests(unittest.TestCase):
 
         result = auacm.competition.get_comps()
 
-        self.assertTrue('upcoming fake mock' in result.lower())
-        self.assertTrue('ongoing fake mock' in result.lower())
-        self.assertTrue('past fake mock' in result.lower())
+        self.assertIn('upcoming fake mock', result.lower())
+        self.assertIn('ongoing fake mock', result.lower())
+        self.assertIn('past fake mock', result.lower())
 
     @patch('requests.get')
     def testGetOneCompetitionById(self, mock_get):
@@ -27,9 +27,9 @@ class CompetitionTests(unittest.TestCase):
 
         result = auacm.competition.get_comps(['-i', '2'])
 
-        self.assertTrue('ongoing fake mock' in result.lower())
-        self.assertTrue('fake problem a' in result.lower())
-        self.assertTrue('brando the mando' in result.lower())
+        self.assertIn('ongoing fake mock', result.lower())
+        self.assertIn('fake problem a', result.lower())
+        self.assertIn('brando the mando', result.lower())
 
     @patch('requests.get')
     def testGetOneCompetitionByName(self, mock_get):
@@ -40,9 +40,9 @@ class CompetitionTests(unittest.TestCase):
 
         result = auacm.competition.get_comps(['ongoing'])
 
-        self.assertTrue('ongoing fake mock' in result.lower())
-        self.assertTrue('fake problem a' in result.lower())
-        self.assertTrue('brando the mando' in result.lower())
+        self.assertIn('ongoing fake mock', result.lower())
+        self.assertIn('fake problem a', result.lower())
+        self.assertIn('brando the mando', result.lower())
 
     @patch('requests.get')
     def testGetOneCompetitionBadName(self, mock_get):
@@ -73,10 +73,10 @@ class ScoreboardTests(unittest.TestCase):
         mock_get.return_value = MockResponse(json=COMPETITION_DETAIL)
 
         result = auacm.competition.get_scoreboard(['-i', '2'])
-        self.assertTrue(('brando the mando' + ' ' * 15)[:15] in result.lower())
-        self.assertTrue('rank' in result.lower())
-        self.assertTrue('solved' in result.lower())
-        self.assertTrue('time' in result.lower())
+        self.assertIn(('brando the mando' + ' ' * 15)[:15], result.lower())
+        self.assertIn('rank', result.lower())
+        self.assertIn('solved', result.lower())
+        self.assertIn('time', result.lower())
 
     @patch('requests.get')
     def testGetScoreboardBad(self, mock_get):
@@ -97,8 +97,8 @@ class ScoreboardTests(unittest.TestCase):
 
         result = auacm.competition.get_scoreboard(['-v', 'ongoing'])
 
-        self.assertTrue('A: Fake Problem A' in result)
-        self.assertTrue('Brando The Mando: 10' in result)
+        self.assertIn('A: Fake Problem A', result)
+        self.assertIn('Brando The Mando: 10', result)
 
 
 

@@ -32,3 +32,16 @@ def _find_pid_from_name(name):
             break
 
     return pid
+
+def format_str_len(string, length):
+    """Format a string to break before a specified length"""
+    words, result, current_line = string.split(), '', 0
+    for word in words:
+        if current_line + len(word) < length:
+            result += ' ' + word
+            current_line += 1 + len(word)
+        else:
+            result += '\n' + word
+            current_line = len(word)
+    return result
+

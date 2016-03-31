@@ -4,7 +4,7 @@
 
 import auacm, unittest
 from unittest.mock import patch
-from mocks import MockResponse, PROBLEMS_RESPONSE, PROBLEM_VERBOSE
+from mocks import MockResponse, MockProcess, PROBLEMS_RESPONSE, PROBLEM_VERBOSE
 
 class ProblemTests(unittest.TestCase):
     """Tests relating to problems"""
@@ -15,8 +15,8 @@ class ProblemTests(unittest.TestCase):
         mock_get.return_value = MockResponse(json=PROBLEMS_RESPONSE)
 
         result = auacm.problems.problems()
-        self.assertTrue('Fake Problem 1' in result)
-        self.assertTrue('Fake Problem 2' in result)
+        self.assertIn('Fake Problem 1', result)
+        self.assertIn('Fake Problem 2', result)
 
     @patch('requests.get')
     def testGetProblemByName(self, mock_get):
@@ -25,7 +25,7 @@ class ProblemTests(unittest.TestCase):
 
         result = auacm.problems.problems(['1'])
         self.assertEqual(1, len(result.splitlines()))
-        self.assertTrue('Fake Problem 1' in result)
+        self.assertIn('Fake Problem 1', result)
 
     @patch('requests.get')
     def testBadGetProblemName(self, mock_get):
@@ -43,7 +43,7 @@ class ProblemTests(unittest.TestCase):
 
         result = auacm.problems.problems(['-i', '2'])
         self.assertEqual(1, len(result.splitlines()))
-        self.assertTrue('Fake Problem 2' in result)
+        self.assertIn('Fake Problem 2', result)
 
     @patch('requests.get')
     def testBadGetProblemId(self, mock_get):
@@ -62,10 +62,67 @@ class ProblemTests(unittest.TestCase):
             MockResponse(json=PROBLEM_VERBOSE)]
 
         result = auacm.problems.get_problem_info(['problem 1'])
-        self.assertTrue('Name: Fake Problem 1' in result)
-        self.assertTrue('Input' in result)
-        self.assertTrue('Output' in result)
-        self.assertTrue('Sample Case 1' in result)
+        self.assertIn('Name: Fake Problem 1', result)
+        self.assertIn('Input', result)
+        self.assertIn('Output', result)
+        self.assertIn('Sample Case 1', result)
+
+
+class SolutionTestTests(unittest.TestCase):
+    """Tests for testing solution to problems"""
+
+    @patch('requests.get')
+    @patch('subprocess.Popen')
+    def testSolutionGood(self, mock_process, mock_response):
+        """Test a passing solutoin"""
+        mock_response.side_effect = [
+            MockResponse(json=PROBLEMS_RESPONSE),
+            MockResponse(json=PROBLEM_VERBOSE)]
+        answer = PROBLEM_VERBOSE['data']['sample_cases'][0]['output']
+        mock_process.return_value = MockProcess(return_value=answer)
+        result = auacm.problems.test_solution(['fake.py'])
+
+        self.assertIn('passed all sample cases', result.lower())
+
+    @patch('requests.get')
+    @patch('subprocess.Popen')
+    def testSolutionBad(self, mock_process, mock_response):
+        """Test a failing solution"""
+        mock_response.side_effect = [
+            MockResponse(json=PROBLEMS_RESPONSE),
+            MockResponse(json=PROBLEM_VERBOSE)]
+        mock_process.return_value = MockProcess(return_value='Not the answer')
+        result = auacm.problems.test_solution(['fake.py'])
+
+        self.assertIn('wrong answer', result.lower())
+
+    @patch('requests.get')
+    @patch('subprocess.Popen')
+    def testSolutionError(self, mock_process, mock_response):
+        """Test a solution that produces a runtime error"""
+        mock_response.side_effect = [
+            MockResponse(json=PROBLEMS_RESPONSE),
+            MockResponse(json=PROBLEM_VERBOSE)]
+        mock_process.return_value = MockProcess(returncode=1)
+        result = auacm.problems.test_solution(['fake.py'])
+
+        self.assertIn('runtime error', result.lower())
+
+    @patch('requests.get')
+    @patch('subprocess.Popen')
+    @patch('subprocess.call')
+    def testCCompiledSolutionGood(self, mock_call, mock_process,
+                                  mock_response):
+        """Test a compiled solution written in C that works"""
+        mock_response.side_effect = [
+            MockResponse(json=PROBLEMS_RESPONSE),
+            MockResponse(json=PROBLEM_VERBOSE)]
+        mock_call.return_value = 0
+        answer = PROBLEM_VERBOSE['data']['sample_cases'][0]['output']
+        mock_process.return_value = MockProcess(return_value=answer)
+
+        result = auacm.problems.test_solution(['fake.c'])
+        self.assertIn('passed all sample cases', result.lower())
 
 
 if __name__ == '__main__':

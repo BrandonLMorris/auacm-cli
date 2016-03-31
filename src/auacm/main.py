@@ -15,7 +15,7 @@ def main(args):
 
     Supported commands (passed as positional arguments):
         [none]        print logo and help
-        test          attempt to connect to the server
+        ping          attempt to connect to the server
         login         log in as a user to the website
         logout        log out of current session
         whoami        print basic info about the current user
@@ -30,7 +30,7 @@ def main(args):
         print(textwrap.dedent('''
             Supported Commands:
             [none], -h, --help  print this lovely help
-            test                attempt to connect to the server
+            ping                attempt to connect to the server
             login               log into the website
             logout              log out of current session
             whoami              print basic info about the current user
@@ -38,6 +38,8 @@ def main(args):
             submit [-i/--id][-p/--python {2, 3}] <problem> <file>
             problem-info [-i/--id] <problem>
             competitions [[-i/--id] <competition>]
+            init [-i/--id] <problem>
+            test <solution> [[-i/--id] <problem>] [-p/--python {2, 3}]
         '''))
 
     elif args[0] in utils.callbacks:
@@ -59,7 +61,7 @@ def main(args):
               'Run again with -h or --help to see full list of commands.')
 
 
-@utils.subcommand('test')
+@utils.subcommand('ping')
 def test(_=None):
     """Try to connect to the server"""
     test_url = auacm.BASE_URL[:-4]

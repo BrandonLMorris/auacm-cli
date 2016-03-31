@@ -44,7 +44,7 @@ PROBLEM_VERBOSE = {
                 "input": "2 2",
                 "output": "4"
             }
-        ], 
+        ],
         "shortname": "fake1"
     }
 }
@@ -131,3 +131,16 @@ class MockFile(object):
     def close(self):
         """Not actually closing a file"""
         pass
+
+
+class MockProcess(object): # pylint: disable=too-few-public-methods
+    """Fake External Process"""
+    def __init__(self, **kwargs):
+        """Create the fake process"""
+        self.returncode = kwargs.get('returncode', 0)
+        self.return_value = kwargs.get('return_value', '')
+
+    def communicate(self, *args, **kwargs):
+        """Simulate feeding input to the process and getting a return value"""
+        return (self.return_value, None)
+
