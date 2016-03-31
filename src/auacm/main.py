@@ -38,6 +38,8 @@ def main(args):
             submit [-i/--id][-p/--python {2, 3}] <problem> <file>
             problem-info [-i/--id] <problem>
             competitions [[-i/--id] <competition>]
+            init [-i/--id] <problem>
+            test <solution> [[-i/--id] <problem>] [-p/--python {2, 3}]
         '''))
 
     elif args[0] in utils.callbacks:
