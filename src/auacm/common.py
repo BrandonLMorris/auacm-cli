@@ -1,14 +1,14 @@
 """Package level common values"""
-import os
+import os, json
 
 DEBUG = False
 BASE_URL = 'http://localhost:5000/api/' if DEBUG else 'http://auacm.com/api/'
+DATA_FILE = os.path.join(os.path.expanduser('~'), '.auacmrc')
 
 try:
-    session = open(
-        os.path.join(os.path.expanduser('~'), '.auacm_session.txt'),
-        'r').readline().strip()
-except IOError:
+    with open(DATA_FILE) as data:
+        session = json.load(data)['session']
+except (IOError, ValueError, KeyError):
     session = ''
 
 # pylint: disable=anomalous-backslash-in-string

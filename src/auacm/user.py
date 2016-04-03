@@ -4,9 +4,10 @@ user.py
 Module for handling user related commands
 """
 
-import requests, getpass, os
+import requests, getpass, os, json
 import auacm
 from auacm import utils
+from auacm.common import DATA_FILE
 
 
 @utils.subcommand('whoami')
@@ -25,19 +26,36 @@ def whoami(args=None):
 @utils.subcommand('logout')
 def logout(args=None):
     """Log the user out of the current session"""
-    # Erase the contents of the session file
-    open(
-        os.path.join(os.path.expanduser('~'), '.auacm_session.txt'),
-        'w'
-    ).close()
-    auacm.session = ''
+    # Erase the session from the data file
+    try:
+        with open(DATA_FILE) as data:
+            user_data = json.load(data)
+    except (IOError, ValueError):
+        user_data = {}
+    user_data.pop('session', None)
+    with open(DATA_FILE, 'w') as data:
+        json.dump(user_data, data, indent=2)
 
 
 @utils.subcommand('login')
 def login(args=None):
     """Log a user in to the website. Keeps up with session data"""
-    username = input('Username: ')
-    password = getpass.getpass('Password: ')
+    # Try to read from ~/.auacmrc
+    try:
+        with open(DATA_FILE) as data:
+            user_data = json.load(data)
+    except (IOError, ValueError):
+        user_data = {}
+    if 'username' not in user_data:
+        username = input('Username: ')
+    else:
+        username = user_data['username']
+
+    if 'password' not in user_data:
+        password = getpass.getpass('Password: ')
+    else:
+        password = user_data['password']
+
     response = requests.post(
         auacm.BASE_URL + 'login',
         data={
@@ -50,11 +68,8 @@ def login(args=None):
             'There was an error attempting to log in')
 
     # Save the new session to a file
-    auacm.session = response.cookies['session']
-    session_f = open(
-        os.path.join(os.path.expanduser('~'), '.auacm_session.txt'),
-        'w')
-    session_f.write(auacm.session + '\n')
-    session_f.close()
+    user_data['session'] = auacm.session = response.cookies['session']
+    with open(DATA_FILE, 'w') as data:
+        json.dump(user_data, data, indent=2)
 
     return 'Success!'
